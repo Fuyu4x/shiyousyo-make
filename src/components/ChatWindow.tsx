@@ -22,7 +22,7 @@ export default function ChatWindow({
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, loading]);
 
   function handleSend() {
     const text = input.trim();
@@ -47,10 +47,10 @@ export default function ChatWindow({
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[80%] rounded-lg px-4 py-2 text-sm whitespace-pre-wrap
+              className={`max-w-[80%] rounded-lg px-4 py-2.5 text-sm whitespace-pre-wrap leading-relaxed
                 ${msg.role === "user"
-                  ? "bg-primary-600 text-white"
-                  : "bg-white border border-gray-200 text-gray-800"
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-700 border border-slate-600 text-slate-100"
                 }`}
             >
               {msg.content}
@@ -59,20 +59,20 @@ export default function ChatWindow({
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-white border border-gray-200 rounded-lg px-4 py-2">
-              <span className="inline-flex space-x-1">
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
+            <div className="bg-slate-700 border border-slate-600 rounded-lg px-4 py-3">
+              <span className="inline-flex space-x-1.5">
+                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:0ms]" />
+                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:300ms]" />
               </span>
             </div>
           </div>
         )}
         <div ref={bottomRef} />
       </div>
-      <div className="border-t p-3 flex gap-2">
+      <div className="border-t border-slate-700 p-3 flex gap-2">
         <textarea
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-50"
+          className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-40"
           rows={2}
           placeholder={placeholder}
           value={input}
@@ -83,7 +83,7 @@ export default function ChatWindow({
         <button
           onClick={handleSend}
           disabled={loading || disabled || !input.trim()}
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed self-end"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed self-end transition-colors"
         >
           送信
         </button>

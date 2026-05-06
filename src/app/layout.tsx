@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navigation from "@/components/Navigation";
+import Sidebar from "@/components/Sidebar";
 
 export const metadata: Metadata = {
   title: "仕様書レビュー・作成支援",
@@ -14,9 +14,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body>
-        <Navigation />
-        <main className="max-w-7xl mx-auto px-4 py-6">{children}</main>
+      <body className="bg-slate-950 text-slate-100">
+        <div className="flex min-h-screen">
+          <Sidebar />
+          <main className="flex-1 min-w-0 overflow-auto">
+            <div className="max-w-5xl mx-auto px-6 py-6">{children}</div>
+          </main>
+        </div>
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-5-20251101";
+// claude-sonnet-4-20250514 as specified; override via ANTHROPIC_MODEL env var
+const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-5";
 
 export function getClient() {
   return new Anthropic({
@@ -8,40 +9,11 @@ export function getClient() {
   });
 }
 
-export async function streamResponse(
-  system: string,
-  messages: Array<{ role: "user" | "assistant"; content: string }>,
-  onChunk: (text: string) => void
-): Promise<string> {
-  const client = getClient();
-  let fullText = "";
-
-  const stream = await client.messages.stream({
-    model: MODEL,
-    max_tokens: 4096,
-    system,
-    messages,
-  });
-
-  for await (const chunk of stream) {
-    if (
-      chunk.type === "content_block_delta" &&
-      chunk.delta.type === "text_delta"
-    ) {
-      onChunk(chunk.delta.text);
-      fullText += chunk.delta.text;
-    }
-  }
-
-  return fullText;
-}
-
 export async function createReadableStream(
   system: string,
   messages: Array<{ role: "user" | "assistant"; content: string }>
 ): Promise<ReadableStream> {
   const client = getClient();
-
   const encoder = new TextEncoder();
 
   return new ReadableStream({
@@ -77,7 +49,7 @@ export async function generateText(
   const client = getClient();
   const response = await client.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: 2000,
     system,
     messages,
   });

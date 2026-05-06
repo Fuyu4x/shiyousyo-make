@@ -13,24 +13,17 @@ export default function MastersPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   async function fetchData() {
     setLoading(true);
     try {
       const res = await fetch("/api/masters/review-points");
       const data = await res.json();
-      setCategories(data.categories || []);
-      if (!activeTab && data.categories?.length > 0) {
-        setActiveTab(data.categories[0].id);
-      }
-    } catch {
-      setError("観点マスタの取得に失敗しました");
-    } finally {
-      setLoading(false);
-    }
+      setCategories(data.categories ?? []);
+      if (!activeTab && data.categories?.length > 0) setActiveTab(data.categories[0].id);
+    } catch { setError("観点マスタの取得に失敗しました"); }
+    finally { setLoading(false); }
   }
 
   async function addCategory() {
@@ -44,14 +37,11 @@ export default function MastersPage() {
       });
       if (!res.ok) throw new Error();
       const cat = await res.json();
-      setCategories((prev) => [...prev, cat]);
+      setCategories((p) => [...p, cat]);
       setActiveTab(cat.id);
       setNewCatName("");
-    } catch {
-      setError("カテゴリの追加に失敗しました");
-    } finally {
-      setSaving(false);
-    }
+    } catch { setError("カテゴリの追加に失敗しました"); }
+    finally { setSaving(false); }
   }
 
   async function addPoint(catId: string) {
@@ -65,16 +55,10 @@ export default function MastersPage() {
       });
       if (!res.ok) throw new Error();
       const point = await res.json();
-      setCategories((prev) =>
-        prev.map((c) => c.id === catId ? { ...c, points: [...c.points, point] } : c)
-      );
-      setNewPointTitle("");
-      setNewPointDesc("");
-    } catch {
-      setError("観点の追加に失敗しました");
-    } finally {
-      setSaving(false);
-    }
+      setCategories((p) => p.map((c) => c.id === catId ? { ...c, points: [...c.points, point] } : c));
+      setNewPointTitle(""); setNewPointDesc("");
+    } catch { setError("観点の追加に失敗しました"); }
+    finally { setSaving(false); }
   }
 
   async function updatePoint(pointId: string) {
@@ -87,18 +71,10 @@ export default function MastersPage() {
         body: JSON.stringify({ title: editingPoint.title, description: editingPoint.description }),
       });
       if (!res.ok) throw new Error();
-      setCategories((prev) =>
-        prev.map((c) => ({
-          ...c,
-          points: c.points.map((p) => p.id === pointId ? editingPoint : p),
-        }))
-      );
+      setCategories((p) => p.map((c) => ({ ...c, points: c.points.map((pt) => pt.id === pointId ? editingPoint : pt) })));
       setEditingPoint(null);
-    } catch {
-      setError("観点の更新に失敗しました");
-    } finally {
-      setSaving(false);
-    }
+    } catch { setError("観点の更新に失敗しました"); }
+    finally { setSaving(false); }
   }
 
   async function deleteItem(id: string) {
@@ -109,64 +85,67 @@ export default function MastersPage() {
       setCategories((prev) => {
         const withoutCat = prev.filter((c) => c.id !== id);
         if (withoutCat.length !== prev.length) {
-          setActiveTab(withoutCat[0]?.id || "");
+          setActiveTab(withoutCat[0]?.id ?? "");
           return withoutCat;
         }
         return prev.map((c) => ({ ...c, points: c.points.filter((p) => p.id !== id) }));
       });
-    } catch {
-      setError("削除に失敗しました");
-    }
+    } catch { setError("削除に失敗しました"); }
   }
 
   const activeCategory = categories.find((c) => c.id === activeTab);
 
   if (loading) {
-    return <div className="flex justify-center items-center h-40 text-gray-400">読み込み中...</div>;
+    return (
+      <div className="space-y-4 animate-pulse">
+        <div className="h-8 w-48 bg-slate-700 rounded" />
+        <div className="bg-slate-800 border border-slate-700 rounded-lg h-64" />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">観点マスタ管理</h1>
+      <h1 className="text-2xl font-bold text-slate-100 border-l-2 border-blue-500 pl-3">観点マスタ管理</h1>
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-red-900/40 border border-red-700 text-red-300 px-4 py-3 rounded-lg text-sm flex justify-between">
           {error}
-          <button className="ml-2 underline" onClick={() => setError("")}>閉じる</button>
+          <button className="underline" onClick={() => setError("")}>閉じる</button>
         </div>
       )}
 
-      {/* カテゴリタブ */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-        <div className="border-b border-gray-200 flex items-center overflow-x-auto">
+      <div className="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
+        {/* タブ */}
+        <div className="border-b border-slate-700 flex items-center overflow-x-auto bg-slate-900/50">
           {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveTab(cat.id)}
               className={`px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors
                 ${activeTab === cat.id
-                  ? "border-primary-600 text-primary-700 bg-primary-50"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  ? "border-blue-500 text-blue-400 bg-slate-800"
+                  : "border-transparent text-slate-400 hover:text-slate-200"
                 }`}
             >
               {cat.name}
-              <span className="ml-2 text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
+              <span className="ml-2 font-mono text-xs bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded">
                 {cat.points.length}
               </span>
             </button>
           ))}
-          <div className="ml-auto px-3 flex items-center gap-2 shrink-0">
+          <div className="ml-auto px-3 py-2 flex items-center gap-2 shrink-0">
             <input
               type="text"
               placeholder="新規カテゴリ名"
               value={newCatName}
               onChange={(e) => setNewCatName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addCategory()}
-              className="border border-gray-300 rounded px-2 py-1 text-sm w-36 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-sm text-slate-100 placeholder-slate-500 w-36 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
             <button
               onClick={addCategory}
               disabled={saving || !newCatName.trim()}
-              className="px-3 py-1 bg-primary-600 text-white rounded text-sm hover:bg-primary-700 disabled:opacity-50"
+              className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-500 disabled:opacity-40 transition-colors"
             >
               追加
             </button>
@@ -177,59 +156,42 @@ export default function MastersPage() {
         {activeCategory && (
           <div className="p-4 space-y-3">
             {activeCategory.points.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-4">観点がありません。以下から追加してください。</p>
+              <p className="text-sm text-slate-500 text-center py-6">観点がありません。以下から追加してください。</p>
             )}
             {activeCategory.points.map((point) => (
-              <div key={point.id} className="border border-gray-200 rounded-lg p-4">
+              <div key={point.id} className="border border-slate-700 rounded-lg p-4 bg-slate-900/30 hover:border-slate-600 transition-colors">
                 {editingPoint?.id === point.id ? (
                   <div className="space-y-2">
                     <input
                       type="text"
                       value={editingPoint.title}
                       onChange={(e) => setEditingPoint({ ...editingPoint, title: e.target.value })}
-                      className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-1.5 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                     <textarea
                       value={editingPoint.description}
                       onChange={(e) => setEditingPoint({ ...editingPoint, description: e.target.value })}
                       rows={2}
-                      className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary-500"
+                      className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-1.5 text-sm text-slate-100 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => updatePoint(point.id)}
-                        disabled={saving}
-                        className="px-3 py-1 bg-primary-600 text-white rounded text-sm hover:bg-primary-700 disabled:opacity-50"
-                      >
-                        保存
-                      </button>
-                      <button
-                        onClick={() => setEditingPoint(null)}
-                        className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50"
-                      >
-                        キャンセル
-                      </button>
+                      <button onClick={() => updatePoint(point.id)} disabled={saving}
+                        className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-500 disabled:opacity-40">保存</button>
+                      <button onClick={() => setEditingPoint(null)}
+                        className="px-3 py-1 bg-slate-700 text-slate-300 rounded text-sm hover:bg-slate-600">キャンセル</button>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="font-medium text-gray-900 text-sm">{point.title}</p>
-                      <p className="text-xs text-gray-500 mt-1">{point.description}</p>
+                      <p className="font-medium text-slate-200 text-sm">{point.title}</p>
+                      <p className="text-xs text-slate-500 mt-1">{point.description}</p>
                     </div>
                     <div className="flex gap-2 shrink-0">
-                      <button
-                        onClick={() => setEditingPoint(point)}
-                        className="text-xs text-gray-500 hover:text-primary-600 border border-gray-200 px-2 py-1 rounded"
-                      >
-                        編集
-                      </button>
-                      <button
-                        onClick={() => deleteItem(point.id)}
-                        className="text-xs text-red-500 hover:text-red-700 border border-red-200 px-2 py-1 rounded"
-                      >
-                        削除
-                      </button>
+                      <button onClick={() => setEditingPoint(point)}
+                        className="font-mono text-xs text-slate-400 hover:text-blue-400 border border-slate-700 px-2 py-1 rounded hover:border-blue-500 transition-colors">編集</button>
+                      <button onClick={() => deleteItem(point.id)}
+                        className="font-mono text-xs text-slate-400 hover:text-red-400 border border-slate-700 px-2 py-1 rounded hover:border-red-700 transition-colors">削除</button>
                     </div>
                   </div>
                 )}
@@ -237,36 +199,17 @@ export default function MastersPage() {
             ))}
 
             {/* 観点追加フォーム */}
-            <div className="border border-dashed border-gray-300 rounded-lg p-4 space-y-2 bg-gray-50">
-              <p className="text-xs font-medium text-gray-500">観点を追加</p>
-              <input
-                type="text"
-                placeholder="観点タイトル（例: 個人情報の取扱い定義）"
-                value={newPointTitle}
-                onChange={(e) => setNewPointTitle(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
-              />
-              <textarea
-                placeholder="観点の説明（任意）"
-                value={newPointDesc}
-                onChange={(e) => setNewPointDesc(e.target.value)}
-                rows={2}
-                className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary-500"
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={() => addPoint(activeCategory.id)}
-                  disabled={saving || !newPointTitle.trim()}
-                  className="px-4 py-1.5 bg-primary-600 text-white rounded text-sm hover:bg-primary-700 disabled:opacity-50"
-                >
-                  観点を追加
-                </button>
-                <button
-                  onClick={() => deleteItem(activeCategory.id)}
-                  className="ml-auto px-3 py-1.5 text-red-600 border border-red-200 rounded text-sm hover:bg-red-50"
-                >
-                  このカテゴリを削除
-                </button>
+            <div className="border border-dashed border-slate-600 rounded-lg p-4 space-y-2 bg-slate-900/20">
+              <p className="text-xs font-mono text-slate-500">観点を追加</p>
+              <input type="text" placeholder="観点タイトル" value={newPointTitle} onChange={(e) => setNewPointTitle(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-1.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <textarea placeholder="観点の説明（任意）" value={newPointDesc} onChange={(e) => setNewPointDesc(e.target.value)} rows={2}
+                className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-1.5 text-sm text-slate-100 placeholder-slate-500 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <div className="flex items-center gap-2">
+                <button onClick={() => addPoint(activeCategory.id)} disabled={saving || !newPointTitle.trim()}
+                  className="px-4 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-500 disabled:opacity-40 transition-colors">観点を追加</button>
+                <button onClick={() => deleteItem(activeCategory.id)}
+                  className="ml-auto font-mono text-xs text-red-400 border border-red-800 px-3 py-1.5 rounded hover:bg-red-900/30 transition-colors">このカテゴリを削除</button>
               </div>
             </div>
           </div>

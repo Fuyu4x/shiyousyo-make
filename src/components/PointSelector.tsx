@@ -24,42 +24,44 @@ export default function PointSelector({ categories, selectedIds, onChange }: Pro
     }
   }
 
-  const allSelected = selectedIds.length === categories.length;
+  const allSelected = selectedIds.length === categories.length && categories.length > 0;
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 pb-2 border-b">
+      <label className="flex items-center gap-2 cursor-pointer pb-2 border-b border-slate-700">
         <input
           type="checkbox"
-          id="select-all"
           checked={allSelected}
           onChange={toggleAll}
-          className="rounded"
+          className="rounded bg-slate-800 border-slate-600 text-blue-500 focus:ring-blue-500"
         />
-        <label htmlFor="select-all" className="text-sm font-medium text-gray-700 cursor-pointer">
-          すべて選択
-        </label>
-      </div>
+        <span className="text-sm font-medium text-slate-300">すべて選択</span>
+      </label>
       <div className="grid grid-cols-2 gap-2">
-        {categories.map((cat) => (
-          <label
-            key={cat.id}
-            className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors
-              ${selectedIds.includes(cat.id)
-                ? "border-primary-500 bg-primary-50"
-                : "border-gray-200 hover:border-gray-300"
-              }`}
-          >
-            <input
-              type="checkbox"
-              checked={selectedIds.includes(cat.id)}
-              onChange={() => toggleCategory(cat.id)}
-              className="rounded"
-            />
-            <span className="text-sm font-medium text-gray-700">{cat.name}</span>
-            <span className="ml-auto text-xs text-gray-400">{cat.points.length}項目</span>
-          </label>
-        ))}
+        {categories.map((cat) => {
+          const selected = selectedIds.includes(cat.id);
+          return (
+            <label
+              key={cat.id}
+              className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors
+                ${selected
+                  ? "border-blue-500 bg-blue-900/20"
+                  : "border-slate-700 hover:border-slate-500 bg-slate-800/50"
+                }`}
+            >
+              <input
+                type="checkbox"
+                checked={selected}
+                onChange={() => toggleCategory(cat.id)}
+                className="rounded bg-slate-800 border-slate-600 text-blue-500 focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-slate-200">{cat.name}</span>
+              <span className="ml-auto font-mono text-xs bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded">
+                {cat.points.length}
+              </span>
+            </label>
+          );
+        })}
       </div>
     </div>
   );
